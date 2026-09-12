@@ -1,4 +1,5 @@
 import { DashboardHeader } from '../components/layout/DashboardHeader'
+import { RecentEvents } from '../features/events/components/RecentEvents'
 import { GameMap } from '../features/game-map/components/GameMap'
 import { useGameSettings } from '../features/game-map/context/GameSettingsContext'
 
@@ -30,10 +31,14 @@ export function DashboardPage() {
 							</p>
 						</section>
 
-						<section className="min-h-52 rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-5 backdrop-blur">
-							<p className="text-xs font-semibold uppercase tracking-[0.25em] text-yellow-300">
-								Últimas ações
-							</p>
+						<section className="rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-4 backdrop-blur">
+							<div className="mb-4">
+								<p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-300">
+									Últimas ações
+								</p>
+							</div>
+
+							<RecentEvents />
 						</section>
 					</aside>
 				</section>
