@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { useGameEvents } from '../../events/context/GameEventsContext'
 import { OperatorAvatar } from '../../operators/components/OperatorAvatar'
 import { OperatorDetailsModal } from '../../operators/components/OperatorDetailsModal'
 import { useOperators } from '../../operators/context/OperatorsContext'
@@ -13,6 +14,8 @@ type GameMapProps = {
 export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 	const { operators, operatorMapPositions, updateOperator, stealFlag } =
 		useOperators()
+
+	const { addEvent } = useGameEvents()
 
 	const [selectedOperatorId, setSelectedOperatorId] = useState<string | null>(
 		null,
@@ -33,6 +36,30 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 			defenseActive: true,
 			stealCredits: operator.stealCredits + 1,
 		})
+
+		addEvent({
+			type: 'goal_completed',
+			message: `${operator.firstName} ${operator.lastName} concluiu uma meta.`,
+		})
+	}
+
+	function handleStealFlag(attackerId: string, targetId: string) {
+		const attacker = operators.find(
+			(operator) => operator.id === attackerId,
+		)
+
+		const target = operators.find((operator) => operator.id === targetId)
+
+		const result = stealFlag(attackerId, targetId)
+
+		if (result.success && attacker && target) {
+			addEvent({
+				type: 'flag_stolen',
+				message: `${attacker.firstName} ${attacker.lastName} roubou uma bandeira de ${target.firstName} ${target.lastName}.`,
+			})
+		}
+
+		return result
 	}
 
 	return (
@@ -77,7 +104,7 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 					operators={operators}
 					onClose={() => setSelectedOperatorId(null)}
 					onRegisterGoal={handleRegisterGoal}
-					onStealFlag={stealFlag}
+					onStealFlag={handleStealFlag}
 				/>
 			)}
 		</>
