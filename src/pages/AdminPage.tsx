@@ -1,0 +1,123 @@
+import { useState } from 'react'
+
+import { MapPositionPicker } from '../features/game-map/components/MapPositionPicker'
+import { defaultMapId, maps } from '../features/game-map/data/maps'
+
+type Position = {
+	x: number
+	y: number
+}
+
+export function AdminPage() {
+	const [selectedMapId, setSelectedMapId] = useState(defaultMapId)
+	const [position, setPosition] = useState<Position>()
+
+	const selectedMap = maps.find((map) => map.id === selectedMapId) ?? maps[0]
+
+	return (
+		<main className="min-h-screen p-6 text-white">
+			<div className="mx-auto max-w-5xl">
+				<header className="mb-8">
+					<h1 className="text-3xl font-black">Admin</h1>
+
+					<p className="mt-2 text-sm text-slate-400">
+						Cadastro e posicionamento de operadores
+					</p>
+				</header>
+
+				<section className="rounded-3xl border border-cyan-400/20 bg-slate-900/60 p-6 backdrop-blur">
+					<div className="grid gap-6 md:grid-cols-2">
+						<div>
+							<label
+								htmlFor="firstName"
+								className="mb-2 block text-sm font-semibold text-slate-300"
+							>
+								Nome
+							</label>
+
+							<input
+								id="firstName"
+								type="text"
+								className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
+							/>
+						</div>
+
+						<div>
+							<label
+								htmlFor="lastName"
+								className="mb-2 block text-sm font-semibold text-slate-300"
+							>
+								Sobrenome
+							</label>
+
+							<input
+								id="lastName"
+								type="text"
+								className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
+							/>
+						</div>
+					</div>
+
+					<div className="mt-6">
+						<label
+							htmlFor="map"
+							className="mb-2 block text-sm font-semibold text-slate-300"
+						>
+							Mapa
+						</label>
+
+						<select
+							id="map"
+							value={selectedMapId}
+							onChange={(event) => {
+								setSelectedMapId(event.target.value)
+								setPosition(undefined)
+							}}
+							className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
+						>
+							{maps.map((map) => (
+								<option key={map.id} value={map.id}>
+									{map.name}
+								</option>
+							))}
+						</select>
+					</div>
+
+					<div className="mt-6">
+						<div className="mb-3">
+							<p className="text-sm font-semibold text-slate-300">
+								Posição no mapa
+							</p>
+
+							<p className="mt-1 text-xs text-slate-500">
+								Clique no mapa para escolher onde o operador
+								ficará.
+							</p>
+						</div>
+
+						<MapPositionPicker
+							image={selectedMap.image}
+							onChange={setPosition}
+						/>
+
+						{position && (
+							<p className="mt-3 font-mono text-xs text-slate-500">
+								X: {position.x}% · Y: {position.y}%
+							</p>
+						)}
+					</div>
+
+					<div className="mt-8 flex justify-end">
+						<button
+							type="button"
+							disabled={!position}
+							className="rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							Salvar operador
+						</button>
+					</div>
+				</section>
+			</div>
+		</main>
+	)
+}
