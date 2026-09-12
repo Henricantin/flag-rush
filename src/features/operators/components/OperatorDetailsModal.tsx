@@ -42,20 +42,22 @@ export function OperatorDetailsModal({
 	}
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-			<div className="w-full max-w-md rounded-3xl border border-cyan-400/20 bg-slate-900 p-6 shadow-2xl">
+		<>
+			<div className="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-sm" />
+
+			<div className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-cyan-400/20 bg-slate-900 p-6 shadow-2xl">
 				<div className="flex items-start justify-between gap-4">
-					<div className="flex items-center gap-4">
-						<div className="flex size-14 items-center justify-center rounded-full border border-cyan-400/30 bg-slate-950 text-lg font-black text-cyan-300">
+					<div className="flex min-w-0 items-center gap-4">
+						<div className="flex size-14 shrink-0 items-center justify-center rounded-full border border-cyan-400/30 bg-slate-950 text-lg font-black text-cyan-300">
 							{operator.avatarKey}
 						</div>
 
-						<div>
+						<div className="min-w-0">
 							<p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
 								Operador
 							</p>
 
-							<h2 className="mt-1 text-2xl font-black text-white">
+							<h2 className="mt-1 truncate text-2xl font-black text-white">
 								{operator.firstName} {operator.lastName}
 							</h2>
 						</div>
@@ -155,85 +157,92 @@ export function OperatorDetailsModal({
 									setIsSelectingTarget(false)
 									setMessage(null)
 								}}
-								className="text-sm font-semibold text-slate-400 transition hover:text-white"
+								className="shrink-0 text-sm font-semibold text-slate-400 transition hover:text-white"
 							>
 								Cancelar
 							</button>
 						</div>
 
-						<div className="grid max-h-64 gap-2 overflow-y-auto">
-							{availableTargets.map((target) => {
-								const isProtected = target.defenseActive
-								const hasNoFlags = target.flags <= 0
-								const isDisabled = isProtected || hasNoFlags
+						<div className="max-h-52 overflow-y-auto pr-2">
+							<div className="grid gap-2">
+								{availableTargets.map((target) => {
+									const isProtected = target.defenseActive
+									const hasNoFlags = target.flags <= 0
+									const isDisabled = isProtected || hasNoFlags
 
-								return (
-									<button
-										key={target.id}
-										type="button"
-										disabled={isDisabled}
-										onClick={() => handleSteal(target.id)}
-										className="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-left transition hover:border-fuchsia-400/40 disabled:cursor-not-allowed disabled:opacity-40"
-									>
-										<div className="flex items-center gap-3">
-											<div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-sm font-bold text-white">
-												{target.avatarKey}
+									return (
+										<button
+											key={target.id}
+											type="button"
+											disabled={isDisabled}
+											onClick={() =>
+												handleSteal(target.id)
+											}
+											className="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-left transition hover:border-fuchsia-400/40 disabled:cursor-not-allowed disabled:opacity-40"
+										>
+											<div className="flex min-w-0 items-center gap-3">
+												<div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-sm font-bold text-white">
+													{target.avatarKey}
+												</div>
+
+												<div className="min-w-0">
+													<p className="truncate font-semibold text-white">
+														{target.firstName}{' '}
+														{target.lastName}
+													</p>
+
+													<p className="mt-0.5 text-xs text-slate-500">
+														🚩 {target.flags}
+														{target.defenseActive
+															? ' · 🛡️ Protegido'
+															: ' · Sem defesa'}
+													</p>
+												</div>
 											</div>
 
-											<div>
-												<p className="font-semibold text-white">
-													{target.firstName}{' '}
-													{target.lastName}
-												</p>
-
-												<p className="mt-0.5 text-xs text-slate-500">
-													🚩 {target.flags}
-													{target.defenseActive
-														? ' · 🛡️ Protegido'
-														: ' · Sem defesa'}
-												</p>
-											</div>
-										</div>
-
-										<Swords className="size-4 shrink-0 text-fuchsia-300" />
-									</button>
-								)
-							})}
+											<Swords className="size-4 shrink-0 text-fuchsia-300" />
+										</button>
+									)
+								})}
+							</div>
 						</div>
 					</div>
 				) : (
-					<div className="mt-6 grid gap-3 sm:grid-cols-2">
-						<button
-							type="button"
-							onClick={() => {
-								onRegisterGoal(operator)
-								setMessage('Meta registrada com sucesso.')
-							}}
-							className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-300"
-						>
-							Registrar meta
-						</button>
+					<div className="mt-6">
+						<div className="grid gap-3 sm:grid-cols-2">
+							<button
+								type="button"
+								onClick={() => {
+									onRegisterGoal(operator)
+									setMessage('Meta registrada com sucesso.')
+								}}
+								className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-300"
+							>
+								Registrar meta
+							</button>
 
-						<button
-							type="button"
-							disabled={operator.stealCredits <= 0}
-							onClick={() => {
-								setIsSelectingTarget(true)
-								setMessage(null)
-							}}
-							className="rounded-xl border border-fuchsia-400/30 bg-fuchsia-400/10 px-4 py-3 font-bold text-fuchsia-300 transition hover:bg-fuchsia-400/20 disabled:cursor-not-allowed disabled:opacity-40"
-						>
-							Roubar bandeira
-						</button>
+							<button
+								type="button"
+								disabled={operator.stealCredits <= 0}
+								onClick={() => {
+									setIsSelectingTarget(true)
+									setMessage(null)
+								}}
+								className="rounded-xl border border-fuchsia-400/30 bg-fuchsia-400/10 px-4 py-3 font-bold text-fuchsia-300 transition hover:bg-fuchsia-400/20 disabled:cursor-not-allowed disabled:opacity-40"
+							>
+								Roubar bandeira
+							</button>
+						</div>
+
+						{operator.stealCredits <= 0 && (
+							<p className="mt-4 text-center text-xs text-slate-600">
+								Registre uma meta para ganhar um crédito de
+								roubo.
+							</p>
+						)}
 					</div>
 				)}
-
-				{!isSelectingTarget && operator.stealCredits <= 0 && (
-					<p className="mt-4 text-center text-xs text-slate-600">
-						Registre uma meta para ganhar um crédito de roubo.
-					</p>
-				)}
 			</div>
-		</div>
+		</>
 	)
 }
