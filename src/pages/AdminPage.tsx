@@ -7,6 +7,7 @@ import { defaultMapId, maps } from '../features/game-map/data/maps'
 import { OperatorList } from '../features/operators/components/OperatorList'
 import { useOperators } from '../features/operators/context/OperatorsContext'
 import type { OperatorMapPosition } from '../features/operators/data/operatorMapPositions'
+import type { Operator } from '../features/operators/types'
 
 type Position = {
 	x: number
@@ -15,15 +16,31 @@ type Position = {
 
 export function AdminPage() {
 	const { activeMapId, setActiveMapId } = useGameSettings()
-	const { operators, addOperator } = useOperators()
+
+	const { operators, addOperator, updateOperator, removeOperator } =
+		useOperators()
 
 	const [firstName, setFirstName] = useState('')
 	const [lastName, setLastName] = useState('')
 	const [operatorMapId, setOperatorMapId] = useState(defaultMapId)
 	const [position, setPosition] = useState<Position>()
 
+	const [editingOperatorId, setEditingOperatorId] = useState<string | null>(
+		null,
+	)
+
 	const selectedOperatorMap =
 		maps.find((map) => map.id === operatorMapId) ?? maps[0]
+
+	const isEditing = editingOperatorId !== null
+
+	function resetForm() {
+		setFirstName('')
+		setLastName('')
+		setOperatorMapId(defaultMapId)
+		setPosition(undefined)
+		setEditingOperatorId(null)
+	}
 
 	function handleCreateOperator() {
 		if (!firstName.trim() || !lastName.trim() || !position) {
@@ -32,7 +49,7 @@ export function AdminPage() {
 
 		const operatorId = crypto.randomUUID()
 
-		const newOperator = {
+		const newOperator: Operator = {
 			id: operatorId,
 			firstName: firstName.trim(),
 			lastName: lastName.trim(),
@@ -52,9 +69,56 @@ export function AdminPage() {
 
 		addOperator(newOperator, newPosition)
 
-		setFirstName('')
-		setLastName('')
+		resetForm()
+	}
+
+	function handleEditOperator(operator: Operator) {
+		setEditingOperatorId(operator.id)
+		setFirstName(operator.firstName)
+		setLastName(operator.lastName)
 		setPosition(undefined)
+	}
+
+	function handleUpdateOperator() {
+		if (!editingOperatorId || !firstName.trim() || !lastName.trim()) {
+			return
+		}
+
+		const currentOperator = operators.find(
+			(operator) => operator.id === editingOperatorId,
+		)
+
+		if (!currentOperator) {
+			return
+		}
+
+		const updatedOperator: Operator = {
+			...currentOperator,
+			firstName: firstName.trim(),
+			lastName: lastName.trim(),
+			avatarKey: `${firstName[0]}${lastName[0]}`.toUpperCase(),
+		}
+
+		updateOperator(updatedOperator)
+
+		resetForm()
+	}
+
+	function handleDeleteOperator(operatorId: string) {
+		removeOperator(operatorId)
+
+		if (editingOperatorId === operatorId) {
+			resetForm()
+		}
+	}
+
+	function handleSubmit() {
+		if (isEditing) {
+			handleUpdateOperator()
+			return
+		}
+
+		handleCreateOperator()
 	}
 
 	return (
@@ -92,15 +156,23 @@ export function AdminPage() {
 						</p>
 					</div>
 
-					<OperatorList operators={operators} />
+					<OperatorList
+						operators={operators}
+						onEdit={handleEditOperator}
+						onDelete={handleDeleteOperator}
+					/>
 				</section>
 
 				<section className="rounded-3xl border border-fuchsia-400/20 bg-slate-900/60 p-6 backdrop-blur">
 					<div className="mb-6">
-						<h2 className="text-xl font-bold">Novo operador</h2>
+						<h2 className="text-xl font-bold">
+							{isEditing ? 'Editar operador' : 'Novo operador'}
+						</h2>
 
 						<p className="mt-1 text-sm text-slate-400">
-							Cadastre e posicione um operador no mapa.
+							{isEditing
+								? 'Atualize os dados do operador selecionado.'
+								: 'Cadastre e posicione um operador no mapa.'}
 						</p>
 					</div>
 
@@ -144,67 +216,83 @@ export function AdminPage() {
 						</div>
 					</div>
 
-					<div className="mt-6">
-						<label
-							htmlFor="operatorMap"
-							className="mb-2 block text-sm font-semibold text-slate-300"
-						>
-							Mapa para posicionamento
-						</label>
+					{!isEditing && (
+						<>
+							<div className="mt-6">
+								<label
+									htmlFor="operatorMap"
+									className="mb-2 block text-sm font-semibold text-slate-300"
+								>
+									Mapa para posicionamento
+								</label>
 
-						<select
-							id="operatorMap"
-							value={operatorMapId}
-							onChange={(event) => {
-								setOperatorMapId(event.target.value)
-								setPosition(undefined)
-							}}
-							className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
-						>
-							{maps.map((map) => (
-								<option key={map.id} value={map.id}>
-									{map.name}
-								</option>
-							))}
-						</select>
-					</div>
+								<select
+									id="operatorMap"
+									value={operatorMapId}
+									onChange={(event) => {
+										setOperatorMapId(event.target.value)
+										setPosition(undefined)
+									}}
+									className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
+								>
+									{maps.map((map) => (
+										<option key={map.id} value={map.id}>
+											{map.name}
+										</option>
+									))}
+								</select>
+							</div>
 
-					<div className="mt-6">
-						<div className="mb-3">
-							<p className="text-sm font-semibold text-slate-300">
-								Posição no mapa
-							</p>
+							<div className="mt-6">
+								<div className="mb-3">
+									<p className="text-sm font-semibold text-slate-300">
+										Posição no mapa
+									</p>
 
-							<p className="mt-1 text-xs text-slate-500">
-								Clique no mapa para escolher onde o operador
-								ficará.
-							</p>
-						</div>
+									<p className="mt-1 text-xs text-slate-500">
+										Clique no mapa para escolher onde o
+										operador ficará.
+									</p>
+								</div>
 
-						<MapPositionPicker
-							image={selectedOperatorMap.image}
-							onChange={setPosition}
-						/>
+								<MapPositionPicker
+									image={selectedOperatorMap.image}
+									onChange={setPosition}
+								/>
 
-						{position && (
-							<p className="mt-3 font-mono text-xs text-slate-500">
-								X: {position.x}% · Y: {position.y}%
-							</p>
+								{position && (
+									<p className="mt-3 font-mono text-xs text-slate-500">
+										X: {position.x}% · Y: {position.y}%
+									</p>
+								)}
+							</div>
+						</>
+					)}
+
+					<div className="mt-8 flex justify-end gap-3">
+						{isEditing && (
+							<button
+								type="button"
+								onClick={resetForm}
+								className="rounded-xl border border-slate-700 px-5 py-3 font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white"
+							>
+								Cancelar
+							</button>
 						)}
-					</div>
 
-					<div className="mt-8 flex justify-end">
 						<button
 							type="button"
-							onClick={handleCreateOperator}
+							onClick={handleSubmit}
 							disabled={
 								!firstName.trim() ||
 								!lastName.trim() ||
-								!position
+								(!isEditing && !position)
 							}
 							className="rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
 						>
-							Salvar operador
+							{isEditing
+								? 'Salvar alterações'
+								: 'Salvar operador'}
 						</button>
 					</div>
 				</section>
