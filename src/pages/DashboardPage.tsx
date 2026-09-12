@@ -3,7 +3,7 @@ import { GameMap } from '../features/game-map/components/GameMap'
 
 export function DashboardPage() {
 	return (
-		<main className="h-screen overflow-hidden bg-[#050816] text-white">
+		<main className="h-screen overflow-hidden text-white">
 			<div className="mx-auto flex h-full max-w-[1920px] flex-col gap-4 p-4 md:p-6">
 				<DashboardHeader />
 
