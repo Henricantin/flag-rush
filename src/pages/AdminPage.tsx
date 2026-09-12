@@ -9,6 +9,8 @@ import { useOperators } from '../features/operators/context/OperatorsContext'
 import type { OperatorMapPosition } from '../features/operators/data/operatorMapPositions'
 import type { Operator } from '../features/operators/types'
 
+// import { supabase } from '../lib/supabase'
+
 type Position = {
 	x: number
 	y: number
@@ -174,6 +176,25 @@ export function AdminPage() {
 
 		handleCreateOperator()
 	}
+
+	// async function handleSupabaseTest() {
+	// 	const { data, error } = await supabase
+	// 		.from('operators')
+	// 		.insert({
+	// 			first_name: 'Teste',
+	// 			last_name: 'Supabase',
+	// 			avatar_key: 'TS',
+	// 		})
+	// 		.select()
+	// 		.single()
+
+	// 	if (error) {
+	// 		console.error('Erro ao criar operador:', error)
+	// 		return
+	// 	}
+
+	// 	console.log('Operador criado:', data)
+	// }
 
 	return (
 		<main className="min-h-screen p-6 text-white">
