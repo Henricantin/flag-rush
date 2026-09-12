@@ -32,7 +32,7 @@ export function GameEventsProvider({ children }: GameEventsProviderProps) {
 			createdAt: new Date(),
 		}
 
-		setEvents((currentEvents) => [newEvent, ...currentEvents].slice(0, 3))
+		setEvents((currentEvents) => [newEvent, ...currentEvents])
 	}
 
 	return (

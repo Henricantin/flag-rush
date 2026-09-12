@@ -2,6 +2,7 @@ import { DashboardHeader } from '../components/layout/DashboardHeader'
 import { RecentEvents } from '../features/events/components/RecentEvents'
 import { GameMap } from '../features/game-map/components/GameMap'
 import { useGameSettings } from '../features/game-map/context/GameSettingsContext'
+import { RankingList } from '../features/ranking/components/RankingList'
 
 export function DashboardPage() {
 	const { activeMapId } = useGameSettings()
@@ -24,11 +25,15 @@ export function DashboardPage() {
 						</div>
 					</section>
 
-					<aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-4">
-						<section className="min-h-0 rounded-3xl border border-fuchsia-400/20 bg-slate-900/50 p-5 backdrop-blur">
-							<p className="text-xs font-semibold uppercase tracking-[0.25em] text-fuchsia-400">
-								Ranking
-							</p>
+					<aside className="flex min-h-0 flex-col gap-4">
+						<section className="shrink-0 rounded-3xl border border-fuchsia-400/20 bg-slate-900/50 p-4 backdrop-blur">
+							<div className="mb-4">
+								<p className="text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">
+									Ranking
+								</p>
+							</div>
+
+							<RankingList />
 						</section>
 
 						<section className="rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-4 backdrop-blur">
