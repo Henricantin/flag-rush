@@ -17,8 +17,14 @@ type Position = {
 export function AdminPage() {
 	const { activeMapId, setActiveMapId } = useGameSettings()
 
-	const { operators, addOperator, updateOperator, removeOperator } =
-		useOperators()
+	const {
+		operators,
+		operatorMapPositions,
+		addOperator,
+		updateOperator,
+		removeOperator,
+		setOperatorMapPosition,
+	} = useOperators()
 
 	const [firstName, setFirstName] = useState('')
 	const [lastName, setLastName] = useState('')
@@ -33,6 +39,12 @@ export function AdminPage() {
 		maps.find((map) => map.id === operatorMapId) ?? maps[0]
 
 	const isEditing = editingOperatorId !== null
+
+	function getOperatorPosition(operatorId: string, mapId: string) {
+		return operatorMapPositions.find(
+			(item) => item.operatorId === operatorId && item.mapId === mapId,
+		)
+	}
 
 	function resetForm() {
 		setFirstName('')
@@ -73,10 +85,23 @@ export function AdminPage() {
 	}
 
 	function handleEditOperator(operator: Operator) {
+		const initialMapId = activeMapId
+
+		const currentPosition = getOperatorPosition(operator.id, initialMapId)
+
 		setEditingOperatorId(operator.id)
 		setFirstName(operator.firstName)
 		setLastName(operator.lastName)
-		setPosition(undefined)
+		setOperatorMapId(initialMapId)
+
+		setPosition(
+			currentPosition
+				? {
+						x: currentPosition.x,
+						y: currentPosition.y,
+					}
+				: undefined,
+		)
 	}
 
 	function handleUpdateOperator() {
@@ -101,6 +126,15 @@ export function AdminPage() {
 
 		updateOperator(updatedOperator)
 
+		if (position) {
+			setOperatorMapPosition({
+				operatorId: editingOperatorId,
+				mapId: operatorMapId,
+				x: position.x,
+				y: position.y,
+			})
+		}
+
 		resetForm()
 	}
 
@@ -110,6 +144,26 @@ export function AdminPage() {
 		if (editingOperatorId === operatorId) {
 			resetForm()
 		}
+	}
+
+	function handleOperatorMapChange(mapId: string) {
+		setOperatorMapId(mapId)
+
+		if (!editingOperatorId) {
+			setPosition(undefined)
+			return
+		}
+
+		const currentPosition = getOperatorPosition(editingOperatorId, mapId)
+
+		setPosition(
+			currentPosition
+				? {
+						x: currentPosition.x,
+						y: currentPosition.y,
+					}
+				: undefined,
+		)
 	}
 
 	function handleSubmit() {
@@ -171,7 +225,7 @@ export function AdminPage() {
 
 						<p className="mt-1 text-sm text-slate-400">
 							{isEditing
-								? 'Atualize os dados do operador selecionado.'
+								? 'Atualize os dados e a posição do operador.'
 								: 'Cadastre e posicione um operador no mapa.'}
 						</p>
 					</div>
@@ -216,58 +270,62 @@ export function AdminPage() {
 						</div>
 					</div>
 
-					{!isEditing && (
-						<>
-							<div className="mt-6">
-								<label
-									htmlFor="operatorMap"
-									className="mb-2 block text-sm font-semibold text-slate-300"
-								>
-									Mapa para posicionamento
-								</label>
+					<div className="mt-6">
+						<label
+							htmlFor="operatorMap"
+							className="mb-2 block text-sm font-semibold text-slate-300"
+						>
+							Mapa para posicionamento
+						</label>
 
-								<select
-									id="operatorMap"
-									value={operatorMapId}
-									onChange={(event) => {
-										setOperatorMapId(event.target.value)
-										setPosition(undefined)
-									}}
-									className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
-								>
-									{maps.map((map) => (
-										<option key={map.id} value={map.id}>
-											{map.name}
-										</option>
-									))}
-								</select>
-							</div>
+						<select
+							id="operatorMap"
+							value={operatorMapId}
+							onChange={(event) =>
+								handleOperatorMapChange(event.target.value)
+							}
+							className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
+						>
+							{maps.map((map) => (
+								<option key={map.id} value={map.id}>
+									{map.name}
+								</option>
+							))}
+						</select>
+					</div>
 
-							<div className="mt-6">
-								<div className="mb-3">
-									<p className="text-sm font-semibold text-slate-300">
-										Posição no mapa
-									</p>
+					<div className="mt-6">
+						<div className="mb-3">
+							<p className="text-sm font-semibold text-slate-300">
+								Posição no mapa
+							</p>
 
-									<p className="mt-1 text-xs text-slate-500">
-										Clique no mapa para escolher onde o
-										operador ficará.
-									</p>
-								</div>
+							<p className="mt-1 text-xs text-slate-500">
+								{isEditing
+									? 'Clique no mapa para alterar a posição neste cenário.'
+									: 'Clique no mapa para escolher onde o operador ficará.'}
+							</p>
+						</div>
 
-								<MapPositionPicker
-									image={selectedOperatorMap.image}
-									onChange={setPosition}
-								/>
+						<MapPositionPicker
+							image={selectedOperatorMap.image}
+							initialPosition={position}
+							onChange={setPosition}
+						/>
 
-								{position && (
-									<p className="mt-3 font-mono text-xs text-slate-500">
-										X: {position.x}% · Y: {position.y}%
-									</p>
-								)}
-							</div>
-						</>
-					)}
+						{position ? (
+							<p className="mt-3 font-mono text-xs text-slate-500">
+								X: {position.x}% · Y: {position.y}%
+							</p>
+						) : (
+							isEditing && (
+								<p className="mt-3 text-xs text-yellow-300/70">
+									Este operador ainda não possui posição neste
+									mapa.
+								</p>
+							)
+						)}
+					</div>
 
 					<div className="mt-8 flex justify-end gap-3">
 						{isEditing && (

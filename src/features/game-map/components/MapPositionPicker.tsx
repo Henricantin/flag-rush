@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type MouseEvent, useEffect, useState } from 'react'
 
 type Position = {
 	x: number
@@ -20,10 +20,15 @@ export function MapPositionPicker({
 		initialPosition,
 	)
 
-	function handleMapClick(event: React.MouseEvent<HTMLButtonElement>) {
+	useEffect(() => {
+		setPosition(initialPosition)
+	}, [initialPosition])
+
+	function handleMapClick(event: MouseEvent<HTMLButtonElement>) {
 		const rect = event.currentTarget.getBoundingClientRect()
 
 		const x = ((event.clientX - rect.left) / rect.width) * 100
+
 		const y = ((event.clientY - rect.top) / rect.height) * 100
 
 		const nextPosition = {

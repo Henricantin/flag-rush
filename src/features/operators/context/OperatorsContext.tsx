@@ -13,6 +13,7 @@ type OperatorsContextValue = {
 	addOperator: (operator: Operator, position: OperatorMapPosition) => void
 	updateOperator: (operator: Operator) => void
 	removeOperator: (operatorId: string) => void
+	setOperatorMapPosition: (position: OperatorMapPosition) => void
 }
 
 const OperatorsContext = createContext<OperatorsContextValue | undefined>(
@@ -59,6 +60,27 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 		)
 	}
 
+	function setOperatorMapPosition(newPosition: OperatorMapPosition) {
+		setOperatorMapPositions((currentPositions) => {
+			const positionExists = currentPositions.some(
+				(position) =>
+					position.operatorId === newPosition.operatorId &&
+					position.mapId === newPosition.mapId,
+			)
+
+			if (!positionExists) {
+				return [...currentPositions, newPosition]
+			}
+
+			return currentPositions.map((position) =>
+				position.operatorId === newPosition.operatorId &&
+				position.mapId === newPosition.mapId
+					? newPosition
+					: position,
+			)
+		})
+	}
+
 	return (
 		<OperatorsContext.Provider
 			value={{
@@ -67,6 +89,7 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 				addOperator,
 				updateOperator,
 				removeOperator,
+				setOperatorMapPosition,
 			}}
 		>
 			{children}
