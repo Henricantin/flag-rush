@@ -1,7 +1,10 @@
 import { DashboardHeader } from '../components/layout/DashboardHeader'
 import { GameMap } from '../features/game-map/components/GameMap'
+import { useGameSettings } from '../features/game-map/context/GameSettingsContext'
 
 export function DashboardPage() {
+	const { activeMapId } = useGameSettings()
+
 	return (
 		<main className="h-screen overflow-hidden text-white">
 			<div className="mx-auto flex h-full max-w-[1920px] flex-col gap-4 p-4 md:p-6">
@@ -15,7 +18,7 @@ export function DashboardPage() {
 							</p>
 
 							<div className="mt-4 min-h-0 flex-1 overflow-hidden rounded-2xl">
-								<GameMap />
+								<GameMap mapId={activeMapId} />
 							</div>
 						</div>
 					</section>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-
 import { MapPositionPicker } from '../features/game-map/components/MapPositionPicker'
+import { MapSelector } from '../features/game-map/components/MapSelector'
+import { useGameSettings } from '../features/game-map/context/GameSettingsContext'
 import { defaultMapId, maps } from '../features/game-map/data/maps'
 
 type Position = {
@@ -9,23 +10,49 @@ type Position = {
 }
 
 export function AdminPage() {
-	const [selectedMapId, setSelectedMapId] = useState(defaultMapId)
+	const { activeMapId, setActiveMapId } = useGameSettings()
+
+	const [operatorMapId, setOperatorMapId] = useState(defaultMapId)
 	const [position, setPosition] = useState<Position>()
 
-	const selectedMap = maps.find((map) => map.id === selectedMapId) ?? maps[0]
+	const selectedOperatorMap =
+		maps.find((map) => map.id === operatorMapId) ?? maps[0]
 
 	return (
 		<main className="min-h-screen p-6 text-white">
-			<div className="mx-auto max-w-5xl">
-				<header className="mb-8">
+			<div className="mx-auto max-w-6xl space-y-8">
+				<header>
 					<h1 className="text-3xl font-black">Admin</h1>
 
 					<p className="mt-2 text-sm text-slate-400">
-						Cadastro e posicionamento de operadores
+						Configurações do jogo e gerenciamento de operadores.
 					</p>
 				</header>
 
 				<section className="rounded-3xl border border-cyan-400/20 bg-slate-900/60 p-6 backdrop-blur">
+					<div className="mb-5">
+						<h2 className="text-xl font-bold">Mapa ativo</h2>
+
+						<p className="mt-1 text-sm text-slate-400">
+							Escolha qual cenário será exibido no dashboard.
+						</p>
+					</div>
+
+					<MapSelector
+						activeMapId={activeMapId}
+						onChange={setActiveMapId}
+					/>
+				</section>
+
+				<section className="rounded-3xl border border-fuchsia-400/20 bg-slate-900/60 p-6 backdrop-blur">
+					<div className="mb-6">
+						<h2 className="text-xl font-bold">Novo operador</h2>
+
+						<p className="mt-1 text-sm text-slate-400">
+							Cadastre e posicione um operador no mapa.
+						</p>
+					</div>
+
 					<div className="grid gap-6 md:grid-cols-2">
 						<div>
 							<label
@@ -60,17 +87,17 @@ export function AdminPage() {
 
 					<div className="mt-6">
 						<label
-							htmlFor="map"
+							htmlFor="operatorMap"
 							className="mb-2 block text-sm font-semibold text-slate-300"
 						>
-							Mapa
+							Mapa para posicionamento
 						</label>
 
 						<select
-							id="map"
-							value={selectedMapId}
+							id="operatorMap"
+							value={operatorMapId}
 							onChange={(event) => {
-								setSelectedMapId(event.target.value)
+								setOperatorMapId(event.target.value)
 								setPosition(undefined)
 							}}
 							className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
@@ -96,7 +123,7 @@ export function AdminPage() {
 						</div>
 
 						<MapPositionPicker
-							image={selectedMap.image}
+							image={selectedOperatorMap.image}
 							onChange={setPosition}
 						/>
 
