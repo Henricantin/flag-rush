@@ -3,6 +3,13 @@ export type Island = {
 	name: string
 	x: number
 	y: number
-	width: number
-	height: number
+	scale: number
+	rotation?: number
+}
+
+export type MapSlot = {
+	id: string
+	islandId: string
+	x: number
+	y: number
 }

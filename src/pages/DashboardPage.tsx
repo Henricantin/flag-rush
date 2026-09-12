@@ -8,13 +8,13 @@ export function DashboardPage() {
 				<DashboardHeader />
 
 				<section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,4fr)_minmax(260px,1fr)]">
-					<section className="min-h-0 rounded-3xl border border-cyan-400/20 bg-slate-900/50 p-5 backdrop-blur">
+					<section className="min-h-0 rounded-3xl border border-cyan-400/20 bg-slate-900/40 p-5 backdrop-blur">
 						<div className="flex h-full flex-col">
 							<p className="shrink-0 text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
 								Arquipélago
 							</p>
 
-							<div className="mt-4 min-h-0 flex-1">
+							<div className="mt-4 min-h-0 flex-1 overflow-hidden rounded-2xl">
 								<GameMap />
 							</div>
 						</div>
