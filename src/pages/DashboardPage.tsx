@@ -36,7 +36,7 @@ export function DashboardPage() {
 							<RankingList />
 						</section>
 
-						<section className="rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-4 backdrop-blur">
+						<section className="min-h-[220px] shrink-0 rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-4 backdrop-blur">
 							<div className="mb-4">
 								<p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-300">
 									Últimas ações
