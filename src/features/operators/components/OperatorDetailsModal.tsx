@@ -1,18 +1,46 @@
 import { Flag, Shield, Swords, Target, X } from 'lucide-react'
+import { useState } from 'react'
 
 import type { Operator } from '../types'
 
 type OperatorDetailsModalProps = {
 	operator: Operator
+	operators: Operator[]
 	onClose: () => void
 	onRegisterGoal: (operator: Operator) => void
+	onStealFlag: (
+		attackerId: string,
+		targetId: string,
+	) => {
+		success: boolean
+		message: string
+	}
 }
 
 export function OperatorDetailsModal({
 	operator,
+	operators,
 	onClose,
 	onRegisterGoal,
+	onStealFlag,
 }: OperatorDetailsModalProps) {
+	const [isSelectingTarget, setIsSelectingTarget] = useState(false)
+	const [message, setMessage] = useState<string | null>(null)
+
+	const availableTargets = operators.filter(
+		(target) => target.id !== operator.id,
+	)
+
+	function handleSteal(targetId: string) {
+		const result = onStealFlag(operator.id, targetId)
+
+		setMessage(result.message)
+
+		if (result.success) {
+			setIsSelectingTarget(false)
+		}
+	}
+
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
 			<div className="w-full max-w-md rounded-3xl border border-cyan-400/20 bg-slate-900 p-6 shadow-2xl">
@@ -101,27 +129,110 @@ export function OperatorDetailsModal({
 					</div>
 				</div>
 
-				<div className="mt-6 grid gap-3 sm:grid-cols-2">
-					<button
-						type="button"
-						onClick={() => onRegisterGoal(operator)}
-						className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-300"
-					>
-						Registrar meta
-					</button>
+				{message && (
+					<div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-300">
+						{message}
+					</div>
+				)}
 
-					<button
-						type="button"
-						disabled
-						className="rounded-xl border border-fuchsia-400/30 bg-fuchsia-400/10 px-4 py-3 font-bold text-fuchsia-300 opacity-40"
-					>
-						Roubar bandeira
-					</button>
-				</div>
+				{isSelectingTarget ? (
+					<div className="mt-6">
+						<div className="mb-3 flex items-center justify-between gap-4">
+							<div>
+								<p className="font-bold text-white">
+									Escolha o alvo
+								</p>
 
-				<p className="mt-4 text-center text-xs text-slate-600">
-					O roubo de bandeira será habilitado em uma próxima etapa.
-				</p>
+								<p className="mt-1 text-xs text-slate-500">
+									Selecione o operador que perderá uma
+									bandeira.
+								</p>
+							</div>
+
+							<button
+								type="button"
+								onClick={() => {
+									setIsSelectingTarget(false)
+									setMessage(null)
+								}}
+								className="text-sm font-semibold text-slate-400 transition hover:text-white"
+							>
+								Cancelar
+							</button>
+						</div>
+
+						<div className="grid max-h-64 gap-2 overflow-y-auto">
+							{availableTargets.map((target) => {
+								const isProtected = target.defenseActive
+								const hasNoFlags = target.flags <= 0
+								const isDisabled = isProtected || hasNoFlags
+
+								return (
+									<button
+										key={target.id}
+										type="button"
+										disabled={isDisabled}
+										onClick={() => handleSteal(target.id)}
+										className="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-left transition hover:border-fuchsia-400/40 disabled:cursor-not-allowed disabled:opacity-40"
+									>
+										<div className="flex items-center gap-3">
+											<div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-sm font-bold text-white">
+												{target.avatarKey}
+											</div>
+
+											<div>
+												<p className="font-semibold text-white">
+													{target.firstName}{' '}
+													{target.lastName}
+												</p>
+
+												<p className="mt-0.5 text-xs text-slate-500">
+													🚩 {target.flags}
+													{target.defenseActive
+														? ' · 🛡️ Protegido'
+														: ' · Sem defesa'}
+												</p>
+											</div>
+										</div>
+
+										<Swords className="size-4 shrink-0 text-fuchsia-300" />
+									</button>
+								)
+							})}
+						</div>
+					</div>
+				) : (
+					<div className="mt-6 grid gap-3 sm:grid-cols-2">
+						<button
+							type="button"
+							onClick={() => {
+								onRegisterGoal(operator)
+								setMessage('Meta registrada com sucesso.')
+							}}
+							className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-300"
+						>
+							Registrar meta
+						</button>
+
+						<button
+							type="button"
+							disabled={operator.stealCredits <= 0}
+							onClick={() => {
+								setIsSelectingTarget(true)
+								setMessage(null)
+							}}
+							className="rounded-xl border border-fuchsia-400/30 bg-fuchsia-400/10 px-4 py-3 font-bold text-fuchsia-300 transition hover:bg-fuchsia-400/20 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							Roubar bandeira
+						</button>
+					</div>
+				)}
+
+				{!isSelectingTarget && operator.stealCredits <= 0 && (
+					<p className="mt-4 text-center text-xs text-slate-600">
+						Registre uma meta para ganhar um crédito de roubo.
+					</p>
+				)}
 			</div>
 		</div>
 	)

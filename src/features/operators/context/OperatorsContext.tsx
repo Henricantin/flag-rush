@@ -7,6 +7,11 @@ import {
 import { operators as initialOperators } from '../data/operators'
 import type { Operator } from '../types'
 
+type StealFlagResult = {
+	success: boolean
+	message: string
+}
+
 type OperatorsContextValue = {
 	operators: Operator[]
 	operatorMapPositions: OperatorMapPosition[]
@@ -14,6 +19,7 @@ type OperatorsContextValue = {
 	updateOperator: (operator: Operator) => void
 	removeOperator: (operatorId: string) => void
 	setOperatorMapPosition: (position: OperatorMapPosition) => void
+	stealFlag: (attackerId: string, targetId: string) => StealFlagResult
 }
 
 const OperatorsContext = createContext<OperatorsContextValue | undefined>(
@@ -81,6 +87,75 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 		})
 	}
 
+	function stealFlag(attackerId: string, targetId: string): StealFlagResult {
+		const attacker = operators.find(
+			(operator) => operator.id === attackerId,
+		)
+
+		const target = operators.find((operator) => operator.id === targetId)
+
+		if (!attacker || !target) {
+			return {
+				success: false,
+				message: 'Operador não encontrado.',
+			}
+		}
+
+		if (attacker.id === target.id) {
+			return {
+				success: false,
+				message: 'O operador não pode roubar de si mesmo.',
+			}
+		}
+
+		if (attacker.stealCredits <= 0) {
+			return {
+				success: false,
+				message: 'O operador não possui créditos de roubo.',
+			}
+		}
+
+		if (target.defenseActive) {
+			return {
+				success: false,
+				message: 'O alvo está com a defesa ativa.',
+			}
+		}
+
+		if (target.flags <= 0) {
+			return {
+				success: false,
+				message: 'O alvo não possui bandeiras disponíveis.',
+			}
+		}
+
+		setOperators((currentOperators) =>
+			currentOperators.map((operator) => {
+				if (operator.id === attackerId) {
+					return {
+						...operator,
+						flags: operator.flags + 1,
+						stealCredits: operator.stealCredits - 1,
+					}
+				}
+
+				if (operator.id === targetId) {
+					return {
+						...operator,
+						flags: operator.flags - 1,
+					}
+				}
+
+				return operator
+			}),
+		)
+
+		return {
+			success: true,
+			message: 'Bandeira roubada com sucesso.',
+		}
+	}
+
 	return (
 		<OperatorsContext.Provider
 			value={{
@@ -90,6 +165,7 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 				updateOperator,
 				removeOperator,
 				setOperatorMapPosition,
+				stealFlag,
 			}}
 		>
 			{children}

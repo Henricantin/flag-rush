@@ -11,7 +11,8 @@ type GameMapProps = {
 }
 
 export function GameMap({ mapId = defaultMapId }: GameMapProps) {
-	const { operators, operatorMapPositions, updateOperator } = useOperators()
+	const { operators, operatorMapPositions, updateOperator, stealFlag } =
+		useOperators()
 
 	const [selectedOperatorId, setSelectedOperatorId] = useState<string | null>(
 		null,
@@ -73,8 +74,10 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 			{selectedOperator && (
 				<OperatorDetailsModal
 					operator={selectedOperator}
+					operators={operators}
 					onClose={() => setSelectedOperatorId(null)}
 					onRegisterGoal={handleRegisterGoal}
+					onStealFlag={stealFlag}
 				/>
 			)}
 		</>
