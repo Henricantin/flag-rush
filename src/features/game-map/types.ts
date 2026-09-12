@@ -1,15 +1,18 @@
-export type Island = {
-	id: string
-	name: string
-	x: number
-	y: number
-	scale: number
-	rotation?: number
-}
-
 export type MapSlot = {
 	id: string
-	islandId: string
+	mapId: string
 	x: number
 	y: number
+}
+
+export type Operator = {
+	id: string
+	firstName: string
+	lastName: string
+	avatarKey: string
+	mapSlotId: string
+	flags: number
+	defenseActive: boolean
+	stealCredits: number
+	goalsCompleted: number
 }
