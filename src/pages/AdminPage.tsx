@@ -1,10 +1,11 @@
 import { useState } from 'react'
+
 import { MapPositionPicker } from '../features/game-map/components/MapPositionPicker'
 import { MapSelector } from '../features/game-map/components/MapSelector'
 import { useGameSettings } from '../features/game-map/context/GameSettingsContext'
 import { defaultMapId, maps } from '../features/game-map/data/maps'
 import { OperatorList } from '../features/operators/components/OperatorList'
-import { operators } from '../features/operators/data/operators'
+import { operators as initialOperators } from '../features/operators/data/operators'
 
 type Position = {
 	x: number
@@ -14,11 +15,39 @@ type Position = {
 export function AdminPage() {
 	const { activeMapId, setActiveMapId } = useGameSettings()
 
+	const [operators, setOperators] = useState(initialOperators)
+
+	const [firstName, setFirstName] = useState('')
+	const [lastName, setLastName] = useState('')
+
 	const [operatorMapId, setOperatorMapId] = useState(defaultMapId)
 	const [position, setPosition] = useState<Position>()
 
 	const selectedOperatorMap =
 		maps.find((map) => map.id === operatorMapId) ?? maps[0]
+
+	function handleCreateOperator() {
+		if (!firstName.trim() || !lastName.trim() || !position) {
+			return
+		}
+
+		const newOperator = {
+			id: crypto.randomUUID(),
+			firstName: firstName.trim(),
+			lastName: lastName.trim(),
+			avatarKey: `${firstName[0]}${lastName[0]}`.toUpperCase(),
+			flags: 5,
+			defenseActive: false,
+			stealCredits: 0,
+			goalsCompleted: 0,
+		}
+
+		setOperators((currentOperators) => [...currentOperators, newOperator])
+
+		setFirstName('')
+		setLastName('')
+		setPosition(undefined)
+	}
 
 	return (
 		<main className="min-h-screen p-6 text-white">
@@ -79,6 +108,10 @@ export function AdminPage() {
 							<input
 								id="firstName"
 								type="text"
+								value={firstName}
+								onChange={(event) =>
+									setFirstName(event.target.value)
+								}
 								className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
 							/>
 						</div>
@@ -94,6 +127,10 @@ export function AdminPage() {
 							<input
 								id="lastName"
 								type="text"
+								value={lastName}
+								onChange={(event) =>
+									setLastName(event.target.value)
+								}
 								className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-400"
 							/>
 						</div>
@@ -151,7 +188,12 @@ export function AdminPage() {
 					<div className="mt-8 flex justify-end">
 						<button
 							type="button"
-							disabled={!position}
+							onClick={handleCreateOperator}
+							disabled={
+								!firstName.trim() ||
+								!lastName.trim() ||
+								!position
+							}
 							className="rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
 						>
 							Salvar operador
