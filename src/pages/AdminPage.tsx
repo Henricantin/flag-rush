@@ -3,6 +3,8 @@ import { MapPositionPicker } from '../features/game-map/components/MapPositionPi
 import { MapSelector } from '../features/game-map/components/MapSelector'
 import { useGameSettings } from '../features/game-map/context/GameSettingsContext'
 import { defaultMapId, maps } from '../features/game-map/data/maps'
+import { OperatorList } from '../features/operators/components/OperatorList'
+import { operators } from '../features/operators/data/operators'
 
 type Position = {
 	x: number
@@ -42,6 +44,18 @@ export function AdminPage() {
 						activeMapId={activeMapId}
 						onChange={setActiveMapId}
 					/>
+				</section>
+
+				<section className="rounded-3xl border border-slate-700/70 bg-slate-900/60 p-6 backdrop-blur">
+					<div className="mb-5">
+						<h2 className="text-xl font-bold">Operadores</h2>
+
+						<p className="mt-1 text-sm text-slate-400">
+							Gerencie os operadores cadastrados.
+						</p>
+					</div>
+
+					<OperatorList operators={operators} />
 				</section>
 
 				<section className="rounded-3xl border border-fuchsia-400/20 bg-slate-900/60 p-6 backdrop-blur">
