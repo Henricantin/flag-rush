@@ -1,6 +1,5 @@
 import { OperatorAvatar } from '../../operators/components/OperatorAvatar'
-import { operatorMapPositions } from '../../operators/data/operatorMapPositions'
-import { operators } from '../../operators/data/operators'
+import { useOperators } from '../../operators/context/OperatorsContext'
 import { defaultMapId, maps } from '../data/maps'
 
 type GameMapProps = {
@@ -8,6 +7,8 @@ type GameMapProps = {
 }
 
 export function GameMap({ mapId = defaultMapId }: GameMapProps) {
+	const { operators, operatorMapPositions } = useOperators()
+
 	const activeMap =
 		maps.find((map) => map.id === mapId) ??
 		maps.find((map) => map.id === defaultMapId) ??

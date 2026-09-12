@@ -5,7 +5,8 @@ import { MapSelector } from '../features/game-map/components/MapSelector'
 import { useGameSettings } from '../features/game-map/context/GameSettingsContext'
 import { defaultMapId, maps } from '../features/game-map/data/maps'
 import { OperatorList } from '../features/operators/components/OperatorList'
-import { operators as initialOperators } from '../features/operators/data/operators'
+import { useOperators } from '../features/operators/context/OperatorsContext'
+import type { OperatorMapPosition } from '../features/operators/data/operatorMapPositions'
 
 type Position = {
 	x: number
@@ -14,12 +15,10 @@ type Position = {
 
 export function AdminPage() {
 	const { activeMapId, setActiveMapId } = useGameSettings()
-
-	const [operators, setOperators] = useState(initialOperators)
+	const { operators, addOperator } = useOperators()
 
 	const [firstName, setFirstName] = useState('')
 	const [lastName, setLastName] = useState('')
-
 	const [operatorMapId, setOperatorMapId] = useState(defaultMapId)
 	const [position, setPosition] = useState<Position>()
 
@@ -31,8 +30,10 @@ export function AdminPage() {
 			return
 		}
 
+		const operatorId = crypto.randomUUID()
+
 		const newOperator = {
-			id: crypto.randomUUID(),
+			id: operatorId,
 			firstName: firstName.trim(),
 			lastName: lastName.trim(),
 			avatarKey: `${firstName[0]}${lastName[0]}`.toUpperCase(),
@@ -42,7 +43,14 @@ export function AdminPage() {
 			goalsCompleted: 0,
 		}
 
-		setOperators((currentOperators) => [...currentOperators, newOperator])
+		const newPosition: OperatorMapPosition = {
+			operatorId,
+			mapId: operatorMapId,
+			x: position.x,
+			y: position.y,
+		}
+
+		addOperator(newOperator, newPosition)
 
 		setFirstName('')
 		setLastName('')
