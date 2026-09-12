@@ -5,11 +5,13 @@ import type { Operator } from '../types'
 type OperatorDetailsModalProps = {
 	operator: Operator
 	onClose: () => void
+	onRegisterGoal: (operator: Operator) => void
 }
 
 export function OperatorDetailsModal({
 	operator,
 	onClose,
+	onRegisterGoal,
 }: OperatorDetailsModalProps) {
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
@@ -102,8 +104,8 @@ export function OperatorDetailsModal({
 				<div className="mt-6 grid gap-3 sm:grid-cols-2">
 					<button
 						type="button"
-						disabled
-						className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 opacity-40"
+						onClick={() => onRegisterGoal(operator)}
+						className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-300"
 					>
 						Registrar meta
 					</button>
@@ -118,7 +120,7 @@ export function OperatorDetailsModal({
 				</div>
 
 				<p className="mt-4 text-center text-xs text-slate-600">
-					As ações do jogo serão habilitadas em uma próxima etapa.
+					O roubo de bandeira será habilitado em uma próxima etapa.
 				</p>
 			</div>
 		</div>

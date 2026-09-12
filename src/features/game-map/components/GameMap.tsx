@@ -11,9 +11,9 @@ type GameMapProps = {
 }
 
 export function GameMap({ mapId = defaultMapId }: GameMapProps) {
-	const { operators, operatorMapPositions } = useOperators()
+	const { operators, operatorMapPositions, updateOperator } = useOperators()
 
-	const [selectedOperator, setSelectedOperator] = useState<Operator | null>(
+	const [selectedOperatorId, setSelectedOperatorId] = useState<string | null>(
 		null,
 	)
 
@@ -21,6 +21,18 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 		maps.find((map) => map.id === mapId) ??
 		maps.find((map) => map.id === defaultMapId) ??
 		maps[0]
+
+	const selectedOperator =
+		operators.find((operator) => operator.id === selectedOperatorId) ?? null
+
+	function handleRegisterGoal(operator: Operator) {
+		updateOperator({
+			...operator,
+			goalsCompleted: operator.goalsCompleted + 1,
+			defenseActive: true,
+			stealCredits: operator.stealCredits + 1,
+		})
+	}
 
 	return (
 		<>
@@ -50,7 +62,9 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 							operator={operator}
 							x={position.x}
 							y={position.y}
-							onClick={setSelectedOperator}
+							onClick={(selectedOperator) =>
+								setSelectedOperatorId(selectedOperator.id)
+							}
 						/>
 					)
 				})}
@@ -59,7 +73,8 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 			{selectedOperator && (
 				<OperatorDetailsModal
 					operator={selectedOperator}
-					onClose={() => setSelectedOperator(null)}
+					onClose={() => setSelectedOperatorId(null)}
+					onRegisterGoal={handleRegisterGoal}
 				/>
 			)}
 		</>
