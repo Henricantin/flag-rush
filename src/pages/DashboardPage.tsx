@@ -1,32 +1,33 @@
 import { DashboardHeader } from '../components/layout/DashboardHeader'
+import { GameMap } from '../features/game-map/components/GameMap'
 
 export function DashboardPage() {
 	return (
-		<main className="min-h-screen bg-[#050816] text-white">
-			<div className="mx-auto flex min-h-screen max-w-[1800px] flex-col gap-6 px-4 py-5 md:px-6">
+		<main className="h-screen overflow-hidden bg-[#050816] text-white">
+			<div className="mx-auto flex h-full max-w-[1920px] flex-col gap-4 p-4 md:p-6">
 				<DashboardHeader />
 
-				<section className="grid flex-1 gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)]">
-					<section className="min-h-[650px] rounded-3xl border border-cyan-400/20 bg-slate-900/50 p-6 backdrop-blur">
-						<p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
-							Arquipélago
-						</p>
+				<section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,4fr)_minmax(260px,1fr)]">
+					<section className="min-h-0 rounded-3xl border border-cyan-400/20 bg-slate-900/50 p-5 backdrop-blur">
+						<div className="flex h-full flex-col">
+							<p className="shrink-0 text-xs font-semibold uppercase tracking-[0.25em] text-cyan-400">
+								Arquipélago
+							</p>
 
-						<div className="mt-4 flex h-[calc(100%-2rem)] items-center justify-center rounded-2xl border border-dashed border-cyan-400/15 bg-cyan-400/[0.02]">
-							<span className="text-sm text-slate-500">
-								Mapa em construção
-							</span>
+							<div className="mt-4 min-h-0 flex-1">
+								<GameMap />
+							</div>
 						</div>
 					</section>
 
-					<aside className="grid gap-6 xl:grid-rows-[1fr_auto]">
-						<section className="rounded-3xl border border-fuchsia-400/20 bg-slate-900/50 p-6 backdrop-blur">
+					<aside className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-4">
+						<section className="min-h-0 rounded-3xl border border-fuchsia-400/20 bg-slate-900/50 p-5 backdrop-blur">
 							<p className="text-xs font-semibold uppercase tracking-[0.25em] text-fuchsia-400">
 								Ranking
 							</p>
 						</section>
 
-						<section className="min-h-56 rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-6 backdrop-blur">
+						<section className="min-h-52 rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-5 backdrop-blur">
 							<p className="text-xs font-semibold uppercase tracking-[0.25em] text-yellow-300">
 								Últimas ações
 							</p>

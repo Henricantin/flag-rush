@@ -2,30 +2,22 @@ import { TimerReset } from 'lucide-react'
 
 export function DashboardHeader() {
 	return (
-		<header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-			<div>
-				<p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-400">
-					Performance Arena
-				</p>
+		<header className="flex shrink-0 flex-col items-center justify-center text-center">
+			<h1 className="text-4xl font-black leading-none tracking-tight text-white md:text-5xl">
+				ROUBA BANDEIRA
+			</h1>
 
-				<h1 className="mt-2 text-4xl font-black tracking-tight text-white md:text-5xl">
-					FLAG
-					<span className="text-cyan-400">//</span>
-					RUSH
-				</h1>
-			</div>
+			<div className="mt-3 flex items-center gap-2 text-slate-300">
+				<TimerReset className="size-4 text-cyan-400" />
 
-			<div className="flex w-fit items-center gap-3 rounded-2xl border border-cyan-400/20 bg-slate-900/70 px-5 py-3 backdrop-blur">
-				<TimerReset className="size-5 text-cyan-400" />
-
-				<div>
-					<p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+				<div className="flex items-baseline gap-2">
+					<span className="text-[15px] font-semibold uppercase tracking-[0.2em] text-slate-500">
 						Próximo reset
-					</p>
+					</span>
 
-					<p className="font-mono text-xl font-bold text-white">
+					<span className="font-mono text-md font-bold text-cyan-300">
 						07:32:18
-					</p>
+					</span>
 				</div>
 			</div>
 		</header>

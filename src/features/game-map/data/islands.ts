@@ -1,0 +1,68 @@
+import type { Island } from '../types'
+
+export const islands: Island[] = [
+	{
+		id: 'pixel-port',
+		name: 'Pixel Port',
+		x: 110,
+		y: 90,
+		width: 170,
+		height: 95,
+	},
+	{
+		id: 'neon-island',
+		name: 'Neon Island',
+		x: 410,
+		y: 70,
+		width: 150,
+		height: 100,
+	},
+	{
+		id: 'glitch-bay',
+		name: 'Glitch Bay',
+		x: 690,
+		y: 120,
+		width: 165,
+		height: 90,
+	},
+	{
+		id: 'turbo-island',
+		name: 'Turbo Island',
+		x: 250,
+		y: 290,
+		width: 170,
+		height: 100,
+	},
+	{
+		id: 'byte-beach',
+		name: 'Byte Beach',
+		x: 540,
+		y: 300,
+		width: 150,
+		height: 95,
+	},
+	{
+		id: 'arcade-rock',
+		name: 'Arcade Rock',
+		x: 780,
+		y: 340,
+		width: 145,
+		height: 90,
+	},
+	{
+		id: 'boss-island',
+		name: 'Boss Island',
+		x: 370,
+		y: 500,
+		width: 190,
+		height: 110,
+	},
+	{
+		id: 'cyber-cove',
+		name: 'Cyber Cove',
+		x: 670,
+		y: 520,
+		width: 170,
+		height: 100,
+	},
+]
