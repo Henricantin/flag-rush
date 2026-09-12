@@ -1,12 +1,17 @@
 import { OperatorAvatar } from '../../operators/components/OperatorAvatar'
+import { operatorMapPositions } from '../../operators/data/operatorMapPositions'
 import { operators } from '../../operators/data/operators'
-import { mapSlots } from '../data/mapSlots'
 import { defaultMapId, maps } from '../data/maps'
 
-export function GameMap() {
-	const activeMap = maps.find((map) => map.id === defaultMapId) ?? maps[0]
+type GameMapProps = {
+	mapId?: string
+}
 
-	const activeSlots = mapSlots.filter((slot) => slot.mapId === activeMap.id)
+export function GameMap({ mapId = defaultMapId }: GameMapProps) {
+	const activeMap =
+		maps.find((map) => map.id === mapId) ??
+		maps.find((map) => map.id === defaultMapId) ??
+		maps[0]
 
 	return (
 		<div className="relative h-full min-h-0 overflow-hidden rounded-2xl bg-slate-950">
@@ -19,11 +24,13 @@ export function GameMap() {
 			<div className="absolute inset-0 bg-slate-950/10" />
 
 			{operators.map((operator) => {
-				const slot = activeSlots.find(
-					(mapSlot) => mapSlot.id === operator.mapSlotId,
+				const position = operatorMapPositions.find(
+					(item) =>
+						item.operatorId === operator.id &&
+						item.mapId === activeMap.id,
 				)
 
-				if (!slot) {
+				if (!position) {
 					return null
 				}
 
@@ -31,8 +38,8 @@ export function GameMap() {
 					<OperatorAvatar
 						key={operator.id}
 						operator={operator}
-						x={slot.x}
-						y={slot.y}
+						x={position.x}
+						y={position.y}
 					/>
 				)
 			})}

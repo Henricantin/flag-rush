@@ -3,7 +3,6 @@ export type Operator = {
 	firstName: string
 	lastName: string
 	avatarKey: string
-	mapSlotId: string
 	flags: number
 	defenseActive: boolean
 	stealCredits: number
