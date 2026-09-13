@@ -8,8 +8,7 @@ import { OperatorList } from '../features/operators/components/OperatorList'
 import { useOperators } from '../features/operators/context/OperatorsContext'
 import type { OperatorMapPosition } from '../features/operators/data/operatorMapPositions'
 import type { Operator } from '../features/operators/types'
-
-// import { supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 type Position = {
 	x: number
@@ -56,18 +55,49 @@ export function AdminPage() {
 		setEditingOperatorId(null)
 	}
 
-	function handleCreateOperator() {
+	async function handleCreateOperator() {
 		if (!firstName.trim() || !lastName.trim() || !position) {
 			return
 		}
 
-		const operatorId = crypto.randomUUID()
+		const avatarKey = `${firstName[0]}${lastName[0]}`.toUpperCase()
+
+		const { data: createdOperator, error: operatorError } = await supabase
+			.from('operators')
+			.insert({
+				first_name: firstName.trim(),
+				last_name: lastName.trim(),
+				avatar_key: avatarKey,
+			})
+			.select()
+			.single()
+
+		if (operatorError) {
+			console.error('Erro ao criar operador:', operatorError)
+
+			return
+		}
+
+		const { error: positionError } = await supabase
+			.from('operator_map_positions')
+			.insert({
+				operator_id: createdOperator.id,
+				map_id: operatorMapId,
+				position_x: position.x,
+				position_y: position.y,
+			})
+
+		if (positionError) {
+			console.error('Erro ao salvar posição:', positionError)
+
+			return
+		}
 
 		const newOperator: Operator = {
-			id: operatorId,
-			firstName: firstName.trim(),
-			lastName: lastName.trim(),
-			avatarKey: `${firstName[0]}${lastName[0]}`.toUpperCase(),
+			id: createdOperator.id,
+			firstName: createdOperator.first_name,
+			lastName: createdOperator.last_name,
+			avatarKey: createdOperator.avatar_key,
 			flags: 5,
 			defenseActive: false,
 			stealCredits: 0,
@@ -75,7 +105,7 @@ export function AdminPage() {
 		}
 
 		const newPosition: OperatorMapPosition = {
-			operatorId,
+			operatorId: createdOperator.id,
 			mapId: operatorMapId,
 			x: position.x,
 			y: position.y,
@@ -176,25 +206,6 @@ export function AdminPage() {
 
 		handleCreateOperator()
 	}
-
-	// async function handleSupabaseTest() {
-	// 	const { data, error } = await supabase
-	// 		.from('operators')
-	// 		.insert({
-	// 			first_name: 'Teste',
-	// 			last_name: 'Supabase',
-	// 			avatar_key: 'TS',
-	// 		})
-	// 		.select()
-	// 		.single()
-
-	// 	if (error) {
-	// 		console.error('Erro ao criar operador:', error)
-	// 		return
-	// 	}
-
-	// 	console.log('Operador criado:', data)
-	// }
 
 	return (
 		<main className="min-h-screen p-6 text-white">
