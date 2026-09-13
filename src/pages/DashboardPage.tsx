@@ -26,24 +26,32 @@ export function DashboardPage() {
 					</section>
 
 					<aside className="flex min-h-0 flex-col gap-4">
-						<section className="shrink-0 rounded-3xl border border-fuchsia-400/20 bg-slate-900/50 p-4 backdrop-blur">
-							<div className="mb-4">
-								<p className="text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">
-									Ranking
-								</p>
-							</div>
+						<section className="h-[370px] shrink-0 rounded-3xl border border-fuchsia-400/20 bg-slate-900/50 p-4 backdrop-blur">
+							<div className="flex h-full flex-col">
+								<div className="mb-4 shrink-0">
+									<p className="text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">
+										Ranking
+									</p>
+								</div>
 
-							<RankingList />
+								<div className="min-h-0 flex-1">
+									<RankingList />
+								</div>
+							</div>
 						</section>
 
-						<section className="min-h-[220px] shrink-0 rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-4 backdrop-blur">
-							<div className="mb-4">
-								<p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-300">
-									Últimas ações
-								</p>
-							</div>
+						<section className="min-h-0 flex-1 rounded-3xl border border-yellow-400/20 bg-slate-900/50 p-4 backdrop-blur">
+							<div className="flex h-full flex-col">
+								<div className="mb-4 shrink-0">
+									<p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-300">
+										Últimas ações
+									</p>
+								</div>
 
-							<RecentEvents />
+								<div className="min-h-0 flex-1">
+									<RecentEvents />
+								</div>
+							</div>
 						</section>
 					</aside>
 				</section>
