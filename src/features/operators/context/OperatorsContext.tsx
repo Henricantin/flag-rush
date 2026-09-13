@@ -7,10 +7,7 @@ import {
 } from 'react'
 
 import { supabase } from '../../../lib/supabase'
-import {
-	operatorMapPositions as initialOperatorMapPositions,
-	type OperatorMapPosition,
-} from '../data/operatorMapPositions'
+import type { OperatorMapPosition } from '../data/operatorMapPositions'
 import type { Operator } from '../types'
 
 type StealFlagResult = {
@@ -39,41 +36,66 @@ type OperatorsProviderProps = {
 export function OperatorsProvider({ children }: OperatorsProviderProps) {
 	const [operators, setOperators] = useState<Operator[]>([])
 
-	const [operatorMapPositions, setOperatorMapPositions] = useState(
-		initialOperatorMapPositions,
-	)
+	const [operatorMapPositions, setOperatorMapPositions] = useState<
+		OperatorMapPosition[]
+	>([])
 
 	useEffect(() => {
-		async function loadOperators() {
-			const { data, error } = await supabase
-				.from('operators')
-				.select('*')
-				.eq('is_active', true)
-				.order('created_at', {
-					ascending: true,
-				})
+		async function loadData() {
+			const { data: operatorsData, error: operatorsError } =
+				await supabase
+					.from('operators')
+					.select('*')
+					.eq('is_active', true)
+					.order('created_at', {
+						ascending: true,
+					})
 
-			if (error) {
-				console.error('Erro ao carregar operadores:', error)
+			if (operatorsError) {
+				console.error('Erro ao carregar operadores:', operatorsError)
 
 				return
 			}
 
-			const loadedOperators: Operator[] = data.map((operator) => ({
-				id: operator.id,
-				firstName: operator.first_name,
-				lastName: operator.last_name,
-				avatarKey: operator.avatar_key,
-				flags: 5,
-				defenseActive: false,
-				stealCredits: 0,
-				goalsCompleted: 0,
-			}))
+			const loadedOperators: Operator[] = operatorsData.map(
+				(operator) => ({
+					id: operator.id,
+					firstName: operator.first_name,
+					lastName: operator.last_name,
+					avatarKey: operator.avatar_key,
+					flags: 5,
+					defenseActive: false,
+					stealCredits: 0,
+					goalsCompleted: 0,
+				}),
+			)
+
+			const { data: positionsData, error: positionsError } =
+				await supabase.from('operator_map_positions').select('*')
+
+			if (positionsError) {
+				console.error(
+					'Erro ao carregar posições dos operadores:',
+					positionsError,
+				)
+
+				return
+			}
+
+			const loadedPositions: OperatorMapPosition[] = positionsData.map(
+				(position) => ({
+					operatorId: position.operator_id,
+					mapId: position.map_id,
+					x: Number(position.position_x),
+					y: Number(position.position_y),
+				}),
+			)
 
 			setOperators(loadedOperators)
+			setOperatorMapPositions(loadedPositions)
 		}
 
-		loadOperators()
+		loadData()
 	}, [])
 
 	function addOperator(operator: Operator, position: OperatorMapPosition) {
