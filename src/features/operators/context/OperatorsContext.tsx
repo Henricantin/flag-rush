@@ -1,10 +1,16 @@
-import { createContext, type ReactNode, useContext, useState } from 'react'
+import {
+	createContext,
+	type ReactNode,
+	useContext,
+	useEffect,
+	useState,
+} from 'react'
 
+import { supabase } from '../../../lib/supabase'
 import {
 	operatorMapPositions as initialOperatorMapPositions,
 	type OperatorMapPosition,
 } from '../data/operatorMapPositions'
-import { operators as initialOperators } from '../data/operators'
 import type { Operator } from '../types'
 
 type StealFlagResult = {
@@ -31,11 +37,44 @@ type OperatorsProviderProps = {
 }
 
 export function OperatorsProvider({ children }: OperatorsProviderProps) {
-	const [operators, setOperators] = useState(initialOperators)
+	const [operators, setOperators] = useState<Operator[]>([])
 
 	const [operatorMapPositions, setOperatorMapPositions] = useState(
 		initialOperatorMapPositions,
 	)
+
+	useEffect(() => {
+		async function loadOperators() {
+			const { data, error } = await supabase
+				.from('operators')
+				.select('*')
+				.eq('is_active', true)
+				.order('created_at', {
+					ascending: true,
+				})
+
+			if (error) {
+				console.error('Erro ao carregar operadores:', error)
+
+				return
+			}
+
+			const loadedOperators: Operator[] = data.map((operator) => ({
+				id: operator.id,
+				firstName: operator.first_name,
+				lastName: operator.last_name,
+				avatarKey: operator.avatar_key,
+				flags: 5,
+				defenseActive: false,
+				stealCredits: 0,
+				goalsCompleted: 0,
+			}))
+
+			setOperators(loadedOperators)
+		}
+
+		loadOperators()
+	}, [])
 
 	function addOperator(operator: Operator, position: OperatorMapPosition) {
 		setOperators((currentOperators) => [...currentOperators, operator])
