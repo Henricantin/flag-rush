@@ -1,5 +1,5 @@
 import { useState } from 'react'
-
+import { supabase } from '../../../lib/supabase'
 import { useGameEvents } from '../../events/context/GameEventsContext'
 import { OperatorAvatar } from '../../operators/components/OperatorAvatar'
 import { OperatorDetailsModal } from '../../operators/components/OperatorDetailsModal'
@@ -29,7 +29,16 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 	const selectedOperator =
 		operators.find((operator) => operator.id === selectedOperatorId) ?? null
 
-	function handleRegisterGoal(operator: Operator) {
+	async function handleRegisterGoal(operator: Operator) {
+		const { error } = await supabase.rpc('register_goal', {
+			p_operator_id: operator.id,
+		})
+
+		if (error) {
+			console.error('Erro ao registrar meta:', error)
+			return
+		}
+
 		updateOperator({
 			...operator,
 			goalsCompleted: operator.goalsCompleted + 1,
