@@ -42,6 +42,31 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 
 	useEffect(() => {
 		async function loadData() {
+			const now = new Date().toISOString()
+
+			const { data: cycleData, error: cycleError } = await supabase
+				.from('game_cycles')
+				.select('id')
+				.lte('starts_at', now)
+				.gt('ends_at', now)
+				.order('starts_at', {
+					ascending: false,
+				})
+				.limit(1)
+				.maybeSingle()
+
+			if (cycleError) {
+				console.error('Erro ao carregar ciclo atual:', cycleError)
+
+				return
+			}
+
+			if (!cycleData) {
+				console.error('Nenhum ciclo ativo encontrado.')
+
+				return
+			}
+
 			const { data: operatorsData, error: operatorsError } =
 				await supabase
 					.from('operators')
@@ -57,18 +82,20 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 				return
 			}
 
-			const loadedOperators: Operator[] = operatorsData.map(
-				(operator) => ({
-					id: operator.id,
-					firstName: operator.first_name,
-					lastName: operator.last_name,
-					avatarKey: operator.avatar_key,
-					flags: 5,
-					defenseActive: false,
-					stealCredits: 0,
-					goalsCompleted: 0,
-				}),
-			)
+			const { data: cycleStatesData, error: cycleStatesError } =
+				await supabase
+					.from('operator_cycle_state')
+					.select('*')
+					.eq('cycle_id', cycleData.id)
+
+			if (cycleStatesError) {
+				console.error(
+					'Erro ao carregar estado dos operadores:',
+					cycleStatesError,
+				)
+
+				return
+			}
 
 			const { data: positionsData, error: positionsError } =
 				await supabase.from('operator_map_positions').select('*')
@@ -81,6 +108,25 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 
 				return
 			}
+
+			const loadedOperators: Operator[] = operatorsData.map(
+				(operator) => {
+					const cycleState = cycleStatesData.find(
+						(state) => state.operator_id === operator.id,
+					)
+
+					return {
+						id: operator.id,
+						firstName: operator.first_name,
+						lastName: operator.last_name,
+						avatarKey: operator.avatar_key,
+						flags: cycleState?.flags ?? 5,
+						defenseActive: cycleState?.defense_active ?? false,
+						stealCredits: cycleState?.steal_credits ?? 0,
+						goalsCompleted: cycleState?.goals_completed ?? 0,
+					}
+				},
+			)
 
 			const loadedPositions: OperatorMapPosition[] = positionsData.map(
 				(position) => ({
