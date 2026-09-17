@@ -3,18 +3,17 @@ import { useState } from 'react'
 
 import type { Operator } from '../types'
 
+type ActionResult = {
+	success: boolean
+	message: string
+}
+
 type OperatorDetailsModalProps = {
 	operator: Operator
 	operators: Operator[]
 	onClose: () => void
-	onRegisterGoal: (operator: Operator) => void
-	onStealFlag: (
-		attackerId: string,
-		targetId: string,
-	) => {
-		success: boolean
-		message: string
-	}
+	onRegisterGoal: (operator: Operator) => Promise<ActionResult>
+	onStealFlag: (attackerId: string, targetId: string) => Promise<ActionResult>
 }
 
 export function OperatorDetailsModal({
@@ -26,19 +25,35 @@ export function OperatorDetailsModal({
 }: OperatorDetailsModalProps) {
 	const [isSelectingTarget, setIsSelectingTarget] = useState(false)
 	const [message, setMessage] = useState<string | null>(null)
+	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const availableTargets = operators.filter(
 		(target) => target.id !== operator.id,
 	)
 
-	function handleSteal(targetId: string) {
-		const result = onStealFlag(operator.id, targetId)
+	async function handleRegisterGoal() {
+		setIsSubmitting(true)
+		setMessage(null)
+
+		const result = await onRegisterGoal(operator)
+
+		setMessage(result.message)
+		setIsSubmitting(false)
+	}
+
+	async function handleSteal(targetId: string) {
+		setIsSubmitting(true)
+		setMessage(null)
+
+		const result = await onStealFlag(operator.id, targetId)
 
 		setMessage(result.message)
 
 		if (result.success) {
 			setIsSelectingTarget(false)
 		}
+
+		setIsSubmitting(false)
 	}
 
 	return (
@@ -153,11 +168,12 @@ export function OperatorDetailsModal({
 
 							<button
 								type="button"
+								disabled={isSubmitting}
 								onClick={() => {
 									setIsSelectingTarget(false)
 									setMessage(null)
 								}}
-								className="shrink-0 text-sm font-semibold text-slate-400 transition hover:text-white"
+								className="shrink-0 text-sm font-semibold text-slate-400 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
 							>
 								Cancelar
 							</button>
@@ -167,8 +183,13 @@ export function OperatorDetailsModal({
 							<div className="grid gap-2">
 								{availableTargets.map((target) => {
 									const isProtected = target.defenseActive
+
 									const hasNoFlags = target.flags <= 0
-									const isDisabled = isProtected || hasNoFlags
+
+									const isDisabled =
+										isProtected ||
+										hasNoFlags ||
+										isSubmitting
 
 									return (
 										<button
@@ -212,18 +233,20 @@ export function OperatorDetailsModal({
 						<div className="grid gap-3 sm:grid-cols-2">
 							<button
 								type="button"
-								onClick={() => {
-									onRegisterGoal(operator)
-									setMessage('Meta registrada com sucesso.')
-								}}
-								className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-300"
+								disabled={isSubmitting}
+								onClick={handleRegisterGoal}
+								className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
 							>
-								Registrar meta
+								{isSubmitting
+									? 'Processando...'
+									: 'Registrar meta'}
 							</button>
 
 							<button
 								type="button"
-								disabled={operator.stealCredits <= 0}
+								disabled={
+									operator.stealCredits <= 0 || isSubmitting
+								}
 								onClick={() => {
 									setIsSelectingTarget(true)
 									setMessage(null)

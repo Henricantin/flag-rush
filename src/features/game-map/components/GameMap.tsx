@@ -11,9 +11,25 @@ type GameMapProps = {
 	mapId?: string
 }
 
+type StealFlagRpcResponse = {
+	success: boolean
+	message: string
+	attacker?: {
+		flags: number
+		defense_active: boolean
+		steal_credits: number
+		goals_completed: number
+	}
+	target?: {
+		flags: number
+		defense_active: boolean
+		steal_credits: number
+		goals_completed: number
+	}
+}
+
 export function GameMap({ mapId = defaultMapId }: GameMapProps) {
-	const { operators, operatorMapPositions, updateOperator, stealFlag } =
-		useOperators()
+	const { operators, operatorMapPositions, updateOperator } = useOperators()
 
 	const { addEvent } = useGameEvents()
 
@@ -36,7 +52,11 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 
 		if (error) {
 			console.error('Erro ao registrar meta:', error)
-			return
+
+			return {
+				success: false,
+				message: 'Não foi possível registrar a meta.',
+			}
 		}
 
 		updateOperator({
@@ -50,25 +70,82 @@ export function GameMap({ mapId = defaultMapId }: GameMapProps) {
 			type: 'goal_completed',
 			message: `${operator.firstName} ${operator.lastName} concluiu uma meta.`,
 		})
+
+		return {
+			success: true,
+			message: 'Meta registrada com sucesso.',
+		}
 	}
 
-	function handleStealFlag(attackerId: string, targetId: string) {
+	async function handleStealFlag(attackerId: string, targetId: string) {
 		const attacker = operators.find(
 			(operator) => operator.id === attackerId,
 		)
 
 		const target = operators.find((operator) => operator.id === targetId)
 
-		const result = stealFlag(attackerId, targetId)
-
-		if (result.success && attacker && target) {
-			addEvent({
-				type: 'flag_stolen',
-				message: `${attacker.firstName} ${attacker.lastName} roubou uma bandeira de ${target.firstName} ${target.lastName}.`,
-			})
+		if (!attacker || !target) {
+			return {
+				success: false,
+				message: 'Operador não encontrado.',
+			}
 		}
 
-		return result
+		const { data, error } = await supabase.rpc('steal_flag', {
+			p_attacker_id: attackerId,
+			p_target_id: targetId,
+		})
+
+		if (error) {
+			console.error('Erro ao roubar bandeira:', error)
+
+			return {
+				success: false,
+				message: 'Não foi possível roubar a bandeira.',
+			}
+		}
+
+		const result = data as StealFlagRpcResponse
+
+		if (!result.success) {
+			return {
+				success: false,
+				message: result.message,
+			}
+		}
+
+		if (!result.attacker || !result.target) {
+			return {
+				success: false,
+				message: 'Resposta inválida do servidor.',
+			}
+		}
+
+		updateOperator({
+			...attacker,
+			flags: result.attacker.flags,
+			defenseActive: result.attacker.defense_active,
+			stealCredits: result.attacker.steal_credits,
+			goalsCompleted: result.attacker.goals_completed,
+		})
+
+		updateOperator({
+			...target,
+			flags: result.target.flags,
+			defenseActive: result.target.defense_active,
+			stealCredits: result.target.steal_credits,
+			goalsCompleted: result.target.goals_completed,
+		})
+
+		addEvent({
+			type: 'flag_stolen',
+			message: `${attacker.firstName} ${attacker.lastName} roubou uma bandeira de ${target.firstName} ${target.lastName}.`,
+		})
+
+		return {
+			success: true,
+			message: result.message,
+		}
 	}
 
 	return (
