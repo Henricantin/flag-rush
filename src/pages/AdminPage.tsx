@@ -174,7 +174,7 @@ export function AdminPage() {
 		)
 	}
 
-	function handleUpdateOperator() {
+	async function handleUpdateOperator() {
 		if (!editingOperatorId || !firstName.trim() || !lastName.trim()) {
 			return
 		}
@@ -187,16 +187,44 @@ export function AdminPage() {
 			return
 		}
 
-		const updatedOperator: Operator = {
-			...currentOperator,
-			firstName: firstName.trim(),
-			lastName: lastName.trim(),
-			avatarKey: `${firstName[0]}${lastName[0]}`.toUpperCase(),
+		const avatarKey = `${firstName[0]}${lastName[0]}`.toUpperCase()
+
+		const { error: operatorError } = await supabase
+			.from('operators')
+			.update({
+				first_name: firstName.trim(),
+				last_name: lastName.trim(),
+				avatar_key: avatarKey,
+			})
+			.eq('id', editingOperatorId)
+
+		if (operatorError) {
+			console.error('Erro ao atualizar operador:', operatorError)
+
+			return
 		}
 
-		updateOperator(updatedOperator)
-
 		if (position) {
+			const { error: positionError } = await supabase
+				.from('operator_map_positions')
+				.upsert(
+					{
+						operator_id: editingOperatorId,
+						map_id: operatorMapId,
+						position_x: position.x,
+						position_y: position.y,
+					},
+					{
+						onConflict: 'operator_id,map_id',
+					},
+				)
+
+			if (positionError) {
+				console.error('Erro ao atualizar posição:', positionError)
+
+				return
+			}
+
 			setOperatorMapPosition({
 				operatorId: editingOperatorId,
 				mapId: operatorMapId,
@@ -205,10 +233,32 @@ export function AdminPage() {
 			})
 		}
 
+		const updatedOperator: Operator = {
+			...currentOperator,
+			firstName: firstName.trim(),
+			lastName: lastName.trim(),
+			avatarKey,
+		}
+
+		updateOperator(updatedOperator)
+
 		resetForm()
 	}
 
-	function handleDeleteOperator(operatorId: string) {
+	async function handleDeleteOperator(operatorId: string) {
+		const { error } = await supabase
+			.from('operators')
+			.update({
+				is_active: false,
+			})
+			.eq('id', operatorId)
+
+		if (error) {
+			console.error('Erro ao desativar operador:', error)
+
+			return
+		}
+
 		removeOperator(operatorId)
 
 		if (editingOperatorId === operatorId) {
@@ -236,13 +286,13 @@ export function AdminPage() {
 		)
 	}
 
-	function handleSubmit() {
+	async function handleSubmit() {
 		if (isEditing) {
-			handleUpdateOperator()
+			await handleUpdateOperator()
 			return
 		}
 
-		handleCreateOperator()
+		await handleCreateOperator()
 	}
 
 	return (
