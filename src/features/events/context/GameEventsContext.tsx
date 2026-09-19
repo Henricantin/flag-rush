@@ -7,7 +7,6 @@ import {
 } from 'react'
 
 import { supabase } from '../../../lib/supabase'
-import { useOperators } from '../../operators/context/OperatorsContext'
 
 export type GameEventType = 'goal_completed' | 'flag_stolen'
 
@@ -32,42 +31,39 @@ type GameEventsProviderProps = {
 	children: ReactNode
 }
 
+type OperatorRow = {
+	id: string
+	first_name: string
+	last_name: string
+}
+
 const GameEventsContext = createContext<GameEventsContextValue | undefined>(
 	undefined,
 )
 
 export function GameEventsProvider({ children }: GameEventsProviderProps) {
-	const { operators } = useOperators()
 	const [events, setEvents] = useState<GameEvent[]>([])
 
 	useEffect(() => {
 		async function loadEvents() {
-			if (operators.length === 0) {
-				setEvents([])
-				return
-			}
-
-			const now = new Date().toISOString()
-
-			const { data: currentCycle, error: cycleError } = await supabase
-				.from('game_cycles')
-				.select('id')
-				.lte('starts_at', now)
-				.gt('ends_at', now)
-				.order('starts_at', {
-					ascending: false,
-				})
-				.limit(1)
-				.maybeSingle()
+			const { data: cycleId, error: cycleError } = await supabase.rpc(
+				'ensure_current_cycle',
+			)
 
 			if (cycleError) {
-				console.error('Erro ao carregar ciclo dos eventos:', cycleError)
+				console.error(
+					'Erro ao garantir ciclo atual dos eventos:',
+					cycleError,
+				)
 
 				return
 			}
 
-			if (!currentCycle) {
-				setEvents([])
+			if (!cycleId) {
+				console.error(
+					'Não foi possível determinar o ciclo atual dos eventos.',
+				)
+
 				return
 			}
 
@@ -76,7 +72,7 @@ export function GameEventsProvider({ children }: GameEventsProviderProps) {
 				.select(
 					'id, event_type, actor_operator_id, target_operator_id, created_at',
 				)
-				.eq('cycle_id', currentCycle.id)
+				.eq('cycle_id', cycleId)
 				.order('created_at', {
 					ascending: false,
 				})
@@ -86,6 +82,22 @@ export function GameEventsProvider({ children }: GameEventsProviderProps) {
 
 				return
 			}
+
+			const { data: operatorsData, error: operatorsError } =
+				await supabase
+					.from('operators')
+					.select('id, first_name, last_name')
+
+			if (operatorsError) {
+				console.error(
+					'Erro ao carregar operadores dos eventos:',
+					operatorsError,
+				)
+
+				return
+			}
+
+			const operators = operatorsData as OperatorRow[]
 
 			const loadedEvents: GameEvent[] = eventsData.map((event) => {
 				const actor = operators.find(
@@ -100,27 +112,26 @@ export function GameEventsProvider({ children }: GameEventsProviderProps) {
 					: null
 
 				const actorName = actor
-					? `${actor.firstName} ${actor.lastName}`
+					? `${actor.first_name} ${actor.last_name}`
 					: 'Operador'
-
-				let message = ''
-
-				if (event.event_type === 'goal_completed') {
-					message = `${actorName} concluiu uma meta.`
-				}
 
 				if (event.event_type === 'flag_stolen') {
 					const targetName = target
-						? `${target.firstName} ${target.lastName}`
+						? `${target.first_name} ${target.last_name}`
 						: 'outro operador'
 
-					message = `${actorName} roubou uma bandeira de ${targetName}.`
+					return {
+						id: event.id,
+						type: 'flag_stolen',
+						message: `${actorName} roubou uma bandeira de ${targetName}.`,
+						createdAt: new Date(event.created_at),
+					}
 				}
 
 				return {
 					id: event.id,
-					type: event.event_type as GameEventType,
-					message,
+					type: 'goal_completed',
+					message: `${actorName} concluiu uma meta.`,
 					createdAt: new Date(event.created_at),
 				}
 			})
@@ -129,7 +140,7 @@ export function GameEventsProvider({ children }: GameEventsProviderProps) {
 		}
 
 		loadEvents()
-	}, [operators])
+	}, [])
 
 	function addEvent(event: AddGameEventInput) {
 		const newEvent: GameEvent = {
