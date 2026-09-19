@@ -42,27 +42,18 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 
 	useEffect(() => {
 		async function loadData() {
-			const now = new Date().toISOString()
-
-			const { data: cycleData, error: cycleError } = await supabase
-				.from('game_cycles')
-				.select('id')
-				.lte('starts_at', now)
-				.gt('ends_at', now)
-				.order('starts_at', {
-					ascending: false,
-				})
-				.limit(1)
-				.maybeSingle()
+			const { data: cycleId, error: cycleError } = await supabase.rpc(
+				'ensure_current_cycle',
+			)
 
 			if (cycleError) {
-				console.error('Erro ao carregar ciclo atual:', cycleError)
+				console.error('Erro ao garantir ciclo atual:', cycleError)
 
 				return
 			}
 
-			if (!cycleData) {
-				console.error('Nenhum ciclo ativo encontrado.')
+			if (!cycleId) {
+				console.error('Não foi possível determinar o ciclo atual.')
 
 				return
 			}
@@ -86,7 +77,7 @@ export function OperatorsProvider({ children }: OperatorsProviderProps) {
 				await supabase
 					.from('operator_cycle_state')
 					.select('*')
-					.eq('cycle_id', cycleData.id)
+					.eq('cycle_id', cycleId)
 
 			if (cycleStatesError) {
 				console.error(

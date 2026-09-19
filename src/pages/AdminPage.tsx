@@ -78,40 +78,18 @@ export function AdminPage() {
 			return
 		}
 
-		const now = new Date().toISOString()
-
-		const { data: currentCycle, error: cycleError } = await supabase
-			.from('game_cycles')
-			.select('id')
-			.lte('starts_at', now)
-			.gt('ends_at', now)
-			.order('starts_at', {
-				ascending: false,
-			})
-			.limit(1)
-			.maybeSingle()
+		const { data: cycleId, error: cycleError } = await supabase.rpc(
+			'ensure_current_cycle',
+		)
 
 		if (cycleError) {
-			console.error('Erro ao buscar ciclo atual:', cycleError)
+			console.error('Erro ao garantir ciclo atual:', cycleError)
 
 			return
 		}
 
-		if (!currentCycle) {
-			console.error('Nenhum ciclo ativo encontrado.')
-
-			return
-		}
-
-		const { error: stateError } = await supabase
-			.from('operator_cycle_state')
-			.insert({
-				operator_id: createdOperator.id,
-				cycle_id: currentCycle.id,
-			})
-
-		if (stateError) {
-			console.error('Erro ao criar estado do operador:', stateError)
+		if (!cycleId) {
+			console.error('Não foi possível determinar o ciclo atual.')
 
 			return
 		}
